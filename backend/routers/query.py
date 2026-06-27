@@ -61,3 +61,20 @@ def get_query_history():
             "created_at": row[5]
         })
     return history
+
+@router.post("/schema")
+async def get_schema(file: UploadFile = File(...)):
+    try:
+        filepath = os.path.join(UPLOAD_DIR, file.filename)
+        filepath = filepath.replace("\\", "/")
+
+        with open(filepath, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+
+        schema = duckdb.execute(
+            f"DESCRIBE SELECT * FROM read_csv_auto('{filepath}')"
+        ).fetchdf()
+
+        return schema.to_dict(orient="records")
+    except Exception as e:
+        return {"error": str(e)}
