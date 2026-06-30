@@ -1,6 +1,12 @@
 import sqlite3
 import os
 from datetime import datetime
+import math
+
+def clean_value(v):
+    if isinstance(v, float) and math.isnan(v):
+        return None
+    return v
 
 DB_PATH = "history.db"
 
@@ -37,3 +43,10 @@ def get_history():
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+def clear_all_history():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM query_history")
+    conn.commit()
+    conn.close()
